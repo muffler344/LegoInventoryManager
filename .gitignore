@@ -397,3 +397,6 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+LegoInventoryHelper/LegoInventoryHelper/obj/Debug/net6.0/LegoInventoryHelper.csproj.AssemblyReference.cache
+LegoInventoryHelper/ConsoleTestBed/obj/Debug/net6.0/ConsoleTestBed.csproj.AssemblyReference.cache
+LegoInventoryHelper/.vs/LegoInventoryHelper/v17/.suo
