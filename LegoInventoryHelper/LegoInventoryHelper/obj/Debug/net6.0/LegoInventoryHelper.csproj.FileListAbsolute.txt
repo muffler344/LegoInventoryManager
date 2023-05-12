@@ -1,0 +1,17 @@
+C:\Users\Marvin\source\repos\LegoInventoryHelper\LegoInventoryHelper\bin\Debug\net6.0\LegoInventoryHelper.deps.json
+C:\Users\Marvin\source\repos\LegoInventoryHelper\LegoInventoryHelper\bin\Debug\net6.0\LegoInventoryHelper.dll
+C:\Users\Marvin\source\repos\LegoInventoryHelper\LegoInventoryHelper\bin\Debug\net6.0\LegoInventoryHelper.pdb
+C:\Users\Marvin\source\repos\LegoInventoryHelper\LegoInventoryHelper\obj\Debug\net6.0\LegoInventoryHelper.csproj.AssemblyReference.cache
+C:\Users\Marvin\source\repos\LegoInventoryHelper\LegoInventoryHelper\obj\Debug\net6.0\LegoInventoryHelper.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Marvin\source\repos\LegoInventoryHelper\LegoInventoryHelper\obj\Debug\net6.0\LegoInventoryHelper.AssemblyInfoInputs.cache
+C:\Users\Marvin\source\repos\LegoInventoryHelper\LegoInventoryHelper\obj\Debug\net6.0\LegoInventoryHelper.AssemblyInfo.cs
+C:\Users\Marvin\source\repos\LegoInventoryHelper\LegoInventoryHelper\obj\Debug\net6.0\LegoInventoryHelper.csproj.CoreCompileInputs.cache
+C:\Users\Marvin\source\repos\LegoInventoryHelper\LegoInventoryHelper\obj\Debug\net6.0\LegoInventoryHelper.dll
+C:\Users\Marvin\source\repos\LegoInventoryHelper\LegoInventoryHelper\obj\Debug\net6.0\refint\LegoInventoryHelper.dll
+C:\Users\Marvin\source\repos\LegoInventoryHelper\LegoInventoryHelper\obj\Debug\net6.0\LegoInventoryHelper.pdb
+C:\Users\Marvin\source\repos\LegoInventoryHelper\LegoInventoryHelper\obj\Debug\net6.0\ref\LegoInventoryHelper.dll
+C:\Users\Marvin\source\repos\LegoInventoryHelper\LegoInventoryHelper\bin\Debug\net6.0\ThridPartyServiceAccessor.dll
+C:\Users\Marvin\source\repos\LegoInventoryHelper\LegoInventoryHelper\bin\Debug\net6.0\ThridPartyServiceAccessor.pdb
+C:\Users\Marvin\source\repos\LegoInventoryHelper\LegoInventoryHelper\obj\Debug\net6.0\LegoInventoryHelper.csproj.CopyComplete
+C:\Users\Marvin\source\repos\LegoInventoryHelper\LegoInventoryHelper\bin\Debug\net6.0\LegoInventoryHelper.runtimeconfig.json
+C:\Users\Marvin\source\repos\LegoInventoryHelper\LegoInventoryHelper\obj\Debug\net6.0\LegoInventoryHelper.genruntimeconfig.cache
