@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\InventroyHelper\ThridPartyServiceAccessor\ThridPartyServiceAccessor.csproj" />
+    <ProjectReference Include="..\ThridPartyServiceAccessor\ThridPartyServiceAccessor.csproj" />
   </ItemGroup>
 
 </Project>
