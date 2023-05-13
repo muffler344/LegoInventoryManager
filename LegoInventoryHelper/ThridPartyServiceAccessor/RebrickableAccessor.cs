@@ -22,11 +22,14 @@ namespace ThridPartyServiceAccessor
                 : Success(await response.Content.ReadAsAsync<Sets>(cancellationToken));
         }
 
-        public async Task<ThemeRebrickable> GetThemeDetailsByThemeID(int themeID, CancellationToken cancellationToken = default)
+        public async Task<Result<ThemeRebrickable, string>> GetThemeDetailsByThemeID(int themeID, CancellationToken cancellationToken = default)
         {
             var response = await _client.GetAsync($"https://rebrickable.com/api/v3/lego/themes/{themeID}/?key={_apiKey}", cancellationToken);
-            return (response == null || !response.IsSuccessStatusCode) ? new ThemeRebrickable() : await response.Content.ReadAsAsync<ThemeRebrickable>(cancellationToken);
+            return (response == null || !response.IsSuccessStatusCode)
+                ? Error($"Theme with Theme ID {themeID} could not be identified.")
+                : Success(await response.Content.ReadAsAsync<ThemeRebrickable>(cancellationToken));
         }
+
         public void Dispose()
         {
             _client.Dispose();

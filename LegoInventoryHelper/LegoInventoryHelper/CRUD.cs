@@ -1,4 +1,5 @@
-﻿using LegoInventoryHelper.DatabaseContext;
+﻿using DocumentFormat.OpenXml.Bibliography;
+using LegoInventoryHelper.DatabaseContext;
 using LegoInventoryHelper.DatabaseContext.Entities;
 using LegoInventoryHelper.Extensions;
 using LegoInventoryHelper.Models;
@@ -26,13 +27,12 @@ namespace LegoInventoryHelper
 
         public async Task<Result<LegoInventoryItem, string>> CreateLegoInventoryItem(CreateInventoryItem item)
         {
-            var setResult = await _legoSetDataRetriver.ReadLegoDataSet(item.SetID);
-            if (!setResult.IsSuccess) return Error($"Set with Set ID {item.SetID} could not be identified.");
-            var themeResult = await CreateThemes(setResult.Payload);
-            if (!themeResult.IsSuccess)
-                return Error(themeResult.Exception);
-            var pricesToAdd = await DeterminePrices(setResult.Payload);
-            var legoInventoryItem = new LegoInventoryItem(item, setResult.Payload, themeResult.Payload, pricesToAdd);
+            var set = await _legoSetDataRetriver.ReadLegoDataSet(item.SetID);
+            if (!set.IsSuccess) return Error($"Set with Set ID {item.SetID} could not be identified.");
+            var theme = await CreateThemes(set.Payload);
+            if (!theme.IsSuccess) return Error(theme.Exception);
+            var pricesToAdd = await DeterminePrices(set.Payload);
+            var legoInventoryItem = new LegoInventoryItem(item, set.Payload, theme.Payload, pricesToAdd);
             await _legoInventoryContext.AddAsync(legoInventoryItem);
             return await SaveChangesCheckIfSuccessfullAsync() ? Success(legoInventoryItem) : Error("Something went wrong while saving the Set into the database.");
         }
@@ -79,33 +79,30 @@ namespace LegoInventoryHelper
         }
 
         //Privates
-        public async Task<Result<Theme, string>> CreateThemes(Set set)
+        private async Task<Result<Theme, string>> CreateThemes(Set set)
         {
             var theme = await _legoInventoryContext.Themes.FirstOrDefaultAsync(x => x.ThemeID == set.ThemeID);
-            if (theme != null)
-                _legoInventoryContext.Attach(theme);
-            else theme = (await
-                    _legoSetDataRetriver.ReadThemeRebrickable(set.ThemeID))?.ToTheme();
-            if (theme == null) return Error("No Theme found.");
+            if (theme != null) _legoInventoryContext.Attach(theme);
+            else
+            {
+                var result = await _legoSetDataRetriver.ReadThemeRebrickable(set.ThemeID);
+                if (result.IsSuccess) theme = result.Payload.ToTheme();
+                else return Error(result.Exception);
+            }
+
             await CreateParentTheme(theme);
             return Success(theme);
         }
         private async Task CreateParentTheme(Theme theme)
         {
-            var parentThemeID = theme.ParentID;
-            if (parentThemeID != null)
-            {
-                var parentTheme = await _legoInventoryContext.Themes.FirstOrDefaultAsync(t => t.ThemeID == parentThemeID);
-                if (parentTheme != null)
-                    return;
-                else
-                     parentTheme = (await _legoSetDataRetriver.ReadThemeRebrickable(parentThemeID.Value))?.ToTheme();
-                if (parentTheme != null)
-                {
-                    _legoInventoryContext.Themes.Add(parentTheme);
-                    await CreateParentTheme(parentTheme);
-                }   
-            }
+            if (!theme.ParentID.HasValue) return;
+            var parentTheme = await _legoInventoryContext.Themes.FirstOrDefaultAsync(t => t.ThemeID == theme.ParentID);
+            if (parentTheme != null) return;
+            var result = await _legoSetDataRetriver.ReadThemeRebrickable((int)theme.ParentID);
+            if (!result.IsSuccess) return;
+            parentTheme = result.Payload.ToTheme();
+            _legoInventoryContext.Themes.Add(parentTheme);
+            await CreateParentTheme(parentTheme);
         }
         private async Task<List<Price>> DeterminePrices(Set set)
         {

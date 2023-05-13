@@ -1,5 +1,4 @@
-﻿using System;
-using BricklinkSharp.Client;
+﻿using BricklinkSharp.Client;
 using LegoInventoryHelper.DatabaseContext.Entities;
 using ThridPartyServiceAccessor.Entities;
 

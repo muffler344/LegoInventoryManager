@@ -25,15 +25,16 @@ namespace ThridPartyServiceAccessor
 
         public async Task<Result<Set, string>> ReadLegoDataSet(string setID)
         {
-            var setsResult = await _rebrickableAccessor.SearchLegoSetsBySetID(setID);
-            if (!setsResult.IsSuccess) return Error(setsResult.Exception);
-            return Success(setsResult.Payload.Results.OrderBy(x => Math.Abs((long)x.SetNumber.Length - setID.Length)).First());
+            var result = await _rebrickableAccessor.SearchLegoSetsBySetID(setID);
+            if (!result.IsSuccess) return Error(result.Exception);
+            return Success(result.Payload.Results.OrderBy(x => Math.Abs((long)x.SetNumber.Length - setID.Length)).First());
         }
 
-        public async Task<ThemeRebrickable?> ReadThemeRebrickable(int themeID)
+        public async Task<Result<ThemeRebrickable, string>> ReadThemeRebrickable(int themeID)
         {
-            //TODO Convert to Result
-            return await _rebrickableAccessor.GetThemeDetailsByThemeID(themeID) ?? null;
+            var result = await _rebrickableAccessor.GetThemeDetailsByThemeID(themeID);
+            if (!result.IsSuccess) return Error(result.Exception);
+            return Success(result.Payload);
         }
 
         public async Task<PriceGuide?> ReadPriceGuideBySetID(string setID)

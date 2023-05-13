@@ -8,6 +8,6 @@ namespace ThridPartyServiceAccessor.Interfaces
         void Dispose();
         Task<Result<Set, string>> ReadLegoDataSet(string setID);
         Task<PriceGuide?> ReadPriceGuideBySetID(string setID);
-        Task<ThemeRebrickable?> ReadThemeRebrickable(int themeID);
+        Task<Result<ThemeRebrickable, string>> ReadThemeRebrickable(int themeID);
     }
 }
