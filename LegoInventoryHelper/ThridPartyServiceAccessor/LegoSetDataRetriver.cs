@@ -37,10 +37,11 @@ namespace ThridPartyServiceAccessor
             return Success(result.Payload);
         }
 
-        public async Task<PriceGuide?> ReadPriceGuideBySetID(string setID)
+        public async Task<Result<PriceGuide, string>> ReadPriceGuideBySetID(string setID)
         {
-            //TODO Rework BrickLinkAccessor
-            return await _brickLinkAccessor.Client.GetPriceGuideAsync(ItemType.Set, setID, priceGuideType: PriceGuideType.Stock, condition: Condition.New) ?? null;
+            var result = await _brickLinkAccessor.GetPriceGuideAsync(setID);
+            if (!result.IsSuccess) return Error(result.Exception);
+            return Success(result.Payload);
         }
     }
 }

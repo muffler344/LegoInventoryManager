@@ -31,8 +31,8 @@ namespace LegoInventoryHelper
             if (!set.IsSuccess) return Error($"Set with Set ID {item.SetID} could not be identified.");
             var theme = await CreateThemes(set.Payload);
             if (!theme.IsSuccess) return Error(theme.Exception);
-            var pricesToAdd = await DeterminePrices(set.Payload);
-            var legoInventoryItem = new LegoInventoryItem(item, set.Payload, theme.Payload, pricesToAdd);
+            var prices = await DeterminePrices(set.Payload);
+            var legoInventoryItem = new LegoInventoryItem(item, set.Payload, theme.Payload, prices.IsSuccess ? prices.Payload : new());
             await _legoInventoryContext.AddAsync(legoInventoryItem);
             return await SaveChangesCheckIfSuccessfullAsync() ? Success(legoInventoryItem) : Error("Something went wrong while saving the Set into the database.");
         }
@@ -57,16 +57,16 @@ namespace LegoInventoryHelper
             return await SaveChangesCheckIfSuccessfullAsync();
         }
 
-        public async Task<bool> UpdatePrices(int id)
+        public async Task<Result<bool, string>> UpdatePrices(int setId)
         {
-            var lii = await _legoInventoryContext.LegoInventoryItems.FindAsync(id);
-            if (lii == null) return false;
-            var priceFromBricklink = await _legoSetDataRetriver.ReadPriceGuideBySetID(lii.SetID);
-            if (priceFromBricklink == null) return false;
+            var lii = await _legoInventoryContext.LegoInventoryItems.FindAsync(setId);
+            if (lii == null) return Error($"Set with Set ID {setId} was not found.");
+            var result = await _legoSetDataRetriver.ReadPriceGuideBySetID(lii.SetID);
+            if (!result.IsSuccess) return Error($"No prices for Set{setId} were not found.");
             _legoInventoryContext.Attach(lii);
-            lii.Prices.Add(priceFromBricklink.ToPrice(lii.SetID));
+            lii.Prices.Add(result.Payload.ToPrice(lii.SetID));
             _legoInventoryContext.Update(lii);
-            return await SaveChangesCheckIfSuccessfullAsync();
+            return await SaveChangesCheckIfSuccessfullAsync() ? Success(true) : Error("Something went wrong while saving prices into the database.");
         }
 
         //Delete
@@ -104,22 +104,20 @@ namespace LegoInventoryHelper
             _legoInventoryContext.Themes.Add(parentTheme);
             await CreateParentTheme(parentTheme);
         }
-        private async Task<List<Price>> DeterminePrices(Set set)
+        private async Task<Result<List<Price>, string>> DeterminePrices(Set set)
         {
             var pricesToAdd = new List<Price>();
             var existingPrices = await _legoInventoryContext.Prices.Where(p => p.SetID == set.SetNumber).ToListAsync();
             _legoInventoryContext.AttachRange(existingPrices);
             pricesToAdd.AddRange(existingPrices);
-            var priceFromBricklink = await _legoSetDataRetriver.ReadPriceGuideBySetID(set.SetNumber);
-            if (priceFromBricklink != null)
-                pricesToAdd.Add(priceFromBricklink.ToPrice(set.SetNumber));
-            return pricesToAdd;
+            var result = await _legoSetDataRetriver.ReadPriceGuideBySetID(set.SetNumber);
+            if (!result.IsSuccess) return Error($"No prices for {set.SetNumber} were found.");
+            pricesToAdd.Add(result.Payload.ToPrice(set.SetNumber));
+            return Success(pricesToAdd);
         }
         private async Task<bool> SaveChangesCheckIfSuccessfullAsync()
         {
-            var changedRows = await _legoInventoryContext.SaveChangesAsync();
-            if (changedRows < 1) return false;
-            return true;
+            return (await _legoInventoryContext.SaveChangesAsync()) < 1;
         }
     }
 }
