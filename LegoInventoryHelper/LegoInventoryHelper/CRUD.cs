@@ -34,7 +34,7 @@ namespace LegoInventoryHelper
             var prices = await DeterminePrices(set.Payload);
             var legoInventoryItem = new LegoInventoryItem(item, set.Payload, theme.Payload, prices.IsSuccess ? prices.Payload : new());
             await _legoInventoryContext.AddAsync(legoInventoryItem);
-            return await SaveChangesCheckIfSuccessfullAsync() ? Success(legoInventoryItem) : Error("Something went wrong while saving the Set into the database.");
+            return await SaveChangesCheckIfSuccessfullAsync(legoInventoryItem, "Something went wrong while saving prices into the database.");
         }
 
         //Read
@@ -66,7 +66,7 @@ namespace LegoInventoryHelper
             _legoInventoryContext.Attach(lii);
             lii.Prices.Add(result.Payload.ToPrice(lii.SetID));
             _legoInventoryContext.Update(lii);
-            return await SaveChangesCheckIfSuccessfullAsync() ? Success(true) : Error("Something went wrong while saving prices into the database.");
+            return await SaveChangesCheckIfSuccessfullAsync(true ,"Something went wrong while saving prices into the database.");
         }
 
         //Delete
@@ -115,6 +115,12 @@ namespace LegoInventoryHelper
             pricesToAdd.Add(result.Payload.ToPrice(set.SetNumber));
             return Success(pricesToAdd);
         }
+
+        private async Task<Result<T, E>> SaveChangesCheckIfSuccessfullAsync<T, E>(T payload, E exception)
+        {
+            return (await _legoInventoryContext.SaveChangesAsync()) < 1 ? Success(payload) : Error(exception);
+        }
+
         private async Task<bool> SaveChangesCheckIfSuccessfullAsync()
         {
             return (await _legoInventoryContext.SaveChangesAsync()) < 1;
