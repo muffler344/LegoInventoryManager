@@ -37,6 +37,15 @@ namespace LegoInventoryHelper
         }
 
         //Read
+        public async Task<Result<bool, string>> CheckIfItemExists(int id)
+        {
+            return (await AllLegoInventoryItems.Select(x => x.ID).FirstOrDefaultAsync(x => x == id) != default) switch
+            {
+                true => Success(true),
+                false => Error("Item does not exist.")
+            };
+        }
+
         public async Task<Result<List<LegoInventoryItem>, string>> ReadAllLegoInventoryItems()
         {
             var result = await AllLegoInventoryItems.ToListAsync();
@@ -44,11 +53,14 @@ namespace LegoInventoryHelper
             return Success(result);
         }
 
-        //TODO Add UpdatePrice when Item is read only in the singular call 
-        public async Task<LegoInventoryItem?> ReadByID(int id) => await AllLegoInventoryItems.FirstOrDefaultAsync(lii => lii.ID == id);
-
-        public async Task<LegoInventoryItem?> ReadBySetID(string setID) => await AllLegoInventoryItems.FirstOrDefaultAsync(lii => lii.SetID == setID);
-
+        public async Task<Result<LegoInventoryItem, string>> ReadByID(int id)
+        {
+            var isItemExisting = await CheckIfItemExists(id);
+            if (!isItemExisting.IsSuccess) return Error(isItemExisting.Exception);
+            await UpdatePrices(id);
+            return Success(AllLegoInventoryItems.First(lii => lii.ID == id));
+        }
+        
 
         //Update
         public async Task<Result<bool, string>> Update(LegoInventoryItem lii)
@@ -71,6 +83,18 @@ namespace LegoInventoryHelper
             lii.Prices.Add(result.Payload.ToPrice(lii.SetID));
             _legoInventoryContext.Update(lii);
             return await SaveChangesCheckIfSuccessfullAsync(true ,"Something went wrong while saving prices into the database.");
+        }
+
+        private async Task<Result<List<Price>, string>> DeterminePrices(Set set)
+        {
+            var pricesToAdd = new List<Price>();
+            var existingPrices = await _legoInventoryContext.Prices.Where(p => p.SetID == set.SetNumber).ToListAsync();
+            _legoInventoryContext.AttachRange(existingPrices);
+            pricesToAdd.AddRange(existingPrices);
+            var result = await _legoSetDataRetriver.ReadPriceGuideBySetID(set.SetNumber);
+            if (!result.IsSuccess) return Error($"No prices for {set.SetNumber} were found.");
+            pricesToAdd.Add(result.Payload.ToPrice(set.SetNumber));
+            return Success(pricesToAdd);
         }
 
         //Delete
