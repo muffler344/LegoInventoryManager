@@ -2,6 +2,9 @@
 {
     public class CreateInventoryItem
     {
+        /// <summary>
+        /// Set Number 
+        /// </summary>
         public string SetID { get; set; }
         public double PriceBought { get; set; }
         public bool IsSellable { get; set; }

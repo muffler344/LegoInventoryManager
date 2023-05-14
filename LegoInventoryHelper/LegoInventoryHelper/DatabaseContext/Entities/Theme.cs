@@ -8,7 +8,7 @@ namespace LegoInventoryHelper.DatabaseContext.Entities
         public string Name { get; set; }
         public int ThemeID { get; set; }
         public int? ParentID { get; set; }
-
+        public Theme() { }
         public Theme(ThemeRebrickable themeRebrickable)
         {
             Name = themeRebrickable.Name;

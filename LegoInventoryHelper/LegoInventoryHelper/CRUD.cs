@@ -1,5 +1,4 @@
-﻿using DocumentFormat.OpenXml.Bibliography;
-using LegoInventoryHelper.DatabaseContext;
+﻿using LegoInventoryHelper.DatabaseContext;
 using LegoInventoryHelper.DatabaseContext.Entities;
 using LegoInventoryHelper.Extensions;
 using LegoInventoryHelper.Models;
@@ -38,8 +37,12 @@ namespace LegoInventoryHelper
         }
 
         //Read
-        public async Task<List<LegoInventoryItem>> ReadAllLegoInventoryItems() => await AllLegoInventoryItems.ToListAsync();
-
+        public async Task<Result<List<LegoInventoryItem>, string>> ReadAllLegoInventoryItems()
+        {
+            var result = await AllLegoInventoryItems.ToListAsync();
+            if (result.Count < 1 || result == null) return Error("There are no Sets in the Databas.");
+            return Success(result);
+        }
 
         //TODO Add UpdatePrice when Item is read only in the singular call 
         public async Task<LegoInventoryItem?> ReadByID(int id) => await AllLegoInventoryItems.FirstOrDefaultAsync(lii => lii.ID == id);
@@ -48,21 +51,22 @@ namespace LegoInventoryHelper
 
 
         //Update
-        public async Task<bool> Update(LegoInventoryItem lii)
+        public async Task<Result<bool, string>> Update(LegoInventoryItem lii)
         {
             var liiFromDB = await _legoInventoryContext.LegoInventoryItems.FindAsync(lii.ID);
-            if (liiFromDB == null) return false;
+            if (liiFromDB == null) return Error($"Update Set with Set ID {lii.SetID} failed.");
             LegoInventoryItem.Update(liiFromDB, lii);
             _legoInventoryContext.Update(liiFromDB);
-            return await SaveChangesCheckIfSuccessfullAsync();
+            return await SaveChangesCheckIfSuccessfullAsync(true, "Something went wrong while updating a Set.");
         }
 
-        public async Task<Result<bool, string>> UpdatePrices(int setId)
+        public async Task<Result<bool, string>> UpdatePrices(int id, int dayCounter = 1)
         {
-            var lii = await _legoInventoryContext.LegoInventoryItems.FindAsync(setId);
-            if (lii == null) return Error($"Set with Set ID {setId} was not found.");
+            var lii = await _legoInventoryContext.LegoInventoryItems.FindAsync(id);
+            if (lii == null) return Error($"No Set found.");
+            if (!lii.IsTheLatestPriceOutdated(dayCounter)) return Error("Prices are up to Date.");
             var result = await _legoSetDataRetriver.ReadPriceGuideBySetID(lii.SetID);
-            if (!result.IsSuccess) return Error($"No prices for Set{setId} were not found.");
+            if (!result.IsSuccess) return Error($"No prices were not found.");
             _legoInventoryContext.Attach(lii);
             lii.Prices.Add(result.Payload.ToPrice(lii.SetID));
             _legoInventoryContext.Update(lii);
@@ -70,12 +74,12 @@ namespace LegoInventoryHelper
         }
 
         //Delete
-        public async Task<bool> Delete(int id)
+        public async Task<Result<bool, string>> Delete(int id)
         {
             var lii = await _legoInventoryContext.LegoInventoryItems.Include(lii => lii.Prices).FirstAsync(lii => lii.ID == id);
-            if (lii == null) return false;
+            if (lii == null) return Error($"Deleting Set with Set ID {id} failed.");
             _legoInventoryContext.Remove(lii);
-            return await SaveChangesCheckIfSuccessfullAsync();
+            return await SaveChangesCheckIfSuccessfullAsync(true, "Something went wrong while deleting a Set.");
         }
 
         //Privates
@@ -118,12 +122,7 @@ namespace LegoInventoryHelper
 
         private async Task<Result<T, E>> SaveChangesCheckIfSuccessfullAsync<T, E>(T payload, E exception)
         {
-            return (await _legoInventoryContext.SaveChangesAsync()) < 1 ? Success(payload) : Error(exception);
-        }
-
-        private async Task<bool> SaveChangesCheckIfSuccessfullAsync()
-        {
-            return (await _legoInventoryContext.SaveChangesAsync()) < 1;
+            return (await _legoInventoryContext.SaveChangesAsync()) < 1 ? Error(exception) : Success(payload);
         }
     }
 }

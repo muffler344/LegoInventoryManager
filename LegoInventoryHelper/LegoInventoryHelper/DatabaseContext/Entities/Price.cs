@@ -1,4 +1,5 @@
 ﻿using BricklinkSharp.Client;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace LegoInventoryHelper.DatabaseContext.Entities
 {
@@ -11,7 +12,6 @@ namespace LegoInventoryHelper.DatabaseContext.Entities
         public double AveragePrice { get; set; }
         public double QuantityAveragePrice { get; set; }
         public DateTime RequestDate { get; set; } = DateTime.Now;
-
         public Price() { }
         public Price(PriceGuide priceGuide, string setID)
         {
