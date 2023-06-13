@@ -33,7 +33,7 @@ namespace LegoInventoryHelper
             var prices = await DeterminePrices(set.Payload);
             var legoInventoryItem = new LegoInventoryItem(item, set.Payload, theme.Payload, prices.IsSuccess ? prices.Payload : new());
             await _legoInventoryContext.AddAsync(legoInventoryItem);
-            return await SaveChangesCheckIfSuccessfullAsync(legoInventoryItem, "Something went wrong while saving prices into the database.");
+            return await SaveChangesCheckIfSuccessfullAsync(legoInventoryItem, "Something went wrong while saving a Set.");
         }
 
         //Read
@@ -49,7 +49,7 @@ namespace LegoInventoryHelper
         public async Task<Result<List<LegoInventoryItem>, string>> ReadAllLegoInventoryItems()
         {
             var result = await AllLegoInventoryItems.ToListAsync();
-            if (result.Count < 1 || result == null) return Error("There are no Sets in the Databas.");
+            if (result.Count < 1 || result == null) return Error("There are no Sets in the Database.");
             return Success(result);
         }
 
