@@ -132,18 +132,7 @@ namespace LegoInventoryHelper
             _legoInventoryContext.Themes.Add(parentTheme);
             await CreateParentTheme(parentTheme);
         }
-        private async Task<Result<List<Price>, string>> DeterminePrices(Set set)
-        {
-            var pricesToAdd = new List<Price>();
-            var existingPrices = await _legoInventoryContext.Prices.Where(p => p.SetID == set.SetNumber).ToListAsync();
-            _legoInventoryContext.AttachRange(existingPrices);
-            pricesToAdd.AddRange(existingPrices);
-            var result = await _legoSetDataRetriver.ReadPriceGuideBySetID(set.SetNumber);
-            if (!result.IsSuccess) return Error($"No prices for {set.SetNumber} were found.");
-            pricesToAdd.Add(result.Payload.ToPrice(set.SetNumber));
-            return Success(pricesToAdd);
-        }
-
+        
         private async Task<Result<T, E>> SaveChangesCheckIfSuccessfullAsync<T, E>(T payload, E exception)
         {
             return (await _legoInventoryContext.SaveChangesAsync()) < 1 ? Error(exception) : Success(payload);
