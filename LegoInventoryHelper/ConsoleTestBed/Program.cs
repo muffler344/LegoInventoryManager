@@ -1,4 +1,7 @@
-﻿using LegoInventoryHelper;
+﻿using BricklinkSharp.Client;
+using DocumentFormat.OpenXml.Bibliography;
+using DocumentFormat.OpenXml.Spreadsheet;
+using LegoInventoryHelper;
 using LegoInventoryHelper.DatabaseContext;
 using LegoInventoryHelper.ExcelImport;
 using LegoInventoryHelper.Models;
@@ -13,26 +16,31 @@ var legoSetDataRetriver = new LegoSetDataRetriver(brickLink, rebrickable);
 var legoInventoryContext = new LegoInventoryContext(configuration);
 var crud = new CRUD(legoSetDataRetriver, legoInventoryContext);
 
-//var allItems = await crud.ReadAllLegoInventoryItems();
-//var sumPricesBought = allItems.Sum(x => x.PriceBought);
-//var itemsWithoutPrice = allItems.Where(x => x.Prices.Count < 1);
+var allItems = (await crud.ReadAllLegoInventoryItems()).Payload;
+var sumPricesBought = allItems.Sum(x => x.PriceBought);
+var itemsWithoutPrice = allItems.Where(x => x.Prices.Count < 1);
 
-//var averagePrice = allItems.Average(x => x.PriceBought);
-//var currentValue = allItems.Sum(x => x.Prices.FirstOrDefault()?.QuantityAveragePrice);
+var averagePrice = allItems.Average(x => x.PriceBought);
+var currentValue = allItems.Sum(x => x.Prices.FirstOrDefault()?.QuantityAveragePrice);
 
-var a = await crud.CreateLegoInventoryItem(new CreateInventoryItem("40648", 24.99));
-var b = await crud.Delete(a.Payload.ID);
+//var all = await crud.ReadAllLegoInventoryItems();
 
-Console.ReadLine();
+//foreach (var item in all.Payload)
+//{
+//    _ = await crud.Delete(item.ID);
+//}
 
+//var a = await crud.CreateLegoInventoryItem(new CreateInventoryItem("75275", 199.99));
+//var b = await crud.Delete(a.Payload.ID);
 
-//var itemsFromExcelFile = ExcelImport.ExtractSetsFromExcel(@"C:\Users\Marvin\OneDrive\Desktop\Lego_Inventar.xlsx");
+//var itemsFromExcelFile = ExcelImport.ExtractSetsFromExcel(@"C:\Users\Marvin\OneDrive\Desktop\Inventar\Lego_Inventar.xlsx");
 //foreach (var createInventoryItem in itemsFromExcelFile)
 //{
-//    var legoSet = await crud.CreateLegoInventoryItem(createInventoryItem);
+//    var legoSet = (await crud.CreateLegoInventoryItem(createInventoryItem)).Payload;
 //    if (legoSet == null) continue;
 //    var prices = legoSet.Prices.OrderByDescending(x => x.RequestDate).First();
-//    Console.WriteLine($"{legoSet.Name} : {legoSet.SetID} : {legoSet.PriceBought} : {prices.QuantityAveragePrice} : {prices.QuantityAveragePrice - legoSet.PriceBought}");
+//    Console.WriteLine($"{legoSet.Name} : {legoSet.SetID} : {legoSet.PriceBought} : {prices.MinPrice} : {prices.QuantityAveragePrice - legoSet.PriceBought}");
+//    Thread.Sleep(1000);
 //}
 //while(true)
 //{
@@ -45,3 +53,5 @@ Console.ReadLine();
 //    var prices = legoSet.Prices.OrderByDescending(x => x.RequestDate).First();
 //    Console.WriteLine($"{legoSet.Name} : {legoSet.SetID} : {legoSet.PriceBought} : {prices.QuantityAveragePrice} : {prices.QuantityAveragePrice-legoSet.PriceBought}");
 //}
+
+Console.ReadLine();
